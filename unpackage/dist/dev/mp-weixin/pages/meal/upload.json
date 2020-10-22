@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "上架菜品",
+  "usingComponents": {
+    "u-field": "/node-modules/uview-ui/components/u-field/u-field",
+    "u-tag": "/node-modules/uview-ui/components/u-tag/u-tag",
+    "u-upload": "/node-modules/uview-ui/components/u-upload/u-upload",
+    "u-button": "/node-modules/uview-ui/components/u-button/u-button",
+    "u-select": "/node-modules/uview-ui/components/u-select/u-select"
+  }
+}

@@ -1,0 +1,141 @@
+{
+	//配置easycom组件模式
+	"easycom": {
+		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+	},
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "订单管理"
+				
+			}
+		},
+		{
+			"path": "pages/printer/bleConnect",
+			"style": {
+				"navigationBarTitleText": "蓝牙连接"
+			}
+		}, {
+			"path": "pages/printer/sendCommand",
+			"style": {
+				"navigationBarTitleText": "发送测试"
+			}
+		},
+		{
+			"path": "pages/profit/getCash",
+			"style": {
+				"navigationBarTitleText": "申请提现"
+			}
+		},
+		{
+			"path": "pages/profit/more",
+			"style": {
+				"navigationBarTitleText": "店铺数据"
+			}
+		},
+		{
+			"path": "pages/store/rate",
+			"style": {
+				"navigationBarTitleText": "店铺评价"
+			}
+		},
+		{
+			"path": "pages/store/detail",
+			"style": {
+				"navigationBarTitleText": "店铺详情"
+			}
+		},
+		{
+			"path": "pages/store/info",
+			"style": {
+				"navigationBarTitleText": "店铺信息"
+			}
+		},
+		{
+			"path": "pages/meal/team",
+			"style": {
+				"navigationBarTitleText": "分组管理"
+			}
+		},
+		{
+			"path": "pages/meal/upload",
+			"style": {
+				"navigationBarTitleText": "上架菜品"
+			}
+		},
+		{
+			"path": "pages/login/index",
+			"style": {
+				"navigationBarTitleText": "登陆",
+				"app-plus": {
+				    "animationType": "slide-in-bottom",
+				    "animationDuration": 300
+				}
+			}
+		},
+		{
+			"path": "pages/meal/index",
+			"style": {
+				"navigationBarTitleText": "菜品设置",
+				"enablePullDownRefresh":true
+			}
+		},
+		{
+			"path": "pages/profit/index",
+			"style": {
+				"navigationBarTitleText": "门店营收",
+				"enablePullDownRefresh":true
+			}
+		},
+		{
+			"path": "pages/store/index",
+			"style": {
+				"navigationBarTitleText": "店铺设置",
+				"enablePullDownRefresh":true
+			}
+		},
+		{
+			"path": "pages/profit/info",
+			"style": {
+				"navigationBarTitleText": "订单详情",
+				"enablePullDownRefresh":true
+			}
+		}
+		
+
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "校餐通",
+		"navigationBarBackgroundColor": "#ffdf67",
+		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+		"color": "#676767",
+		"selectedColor": "#ffbd27",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+			"pagePath": "pages/index/index",
+			"iconPath": "static/images/list.png",
+			"selectedIconPath": "static/images/list-selected.png",
+			"text": "订单管理"
+		},{
+			"pagePath": "pages/meal/index",
+			"iconPath": "static/images/meal.png",
+			"selectedIconPath": "static/images/meal_selected.png",
+			"text": "菜品设置"
+		}, {
+			"pagePath": "pages/profit/index",
+			"iconPath": "static/images/store.png",
+			"selectedIconPath": "static/images/store_selected.png",
+			"text": "门店营收"
+		}, {
+			"pagePath": "pages/store/index",
+			"iconPath": "static/images/options.png",
+			"selectedIconPath": "static/images/options_selected.png",
+			"text": "店铺设置"
+		}]
+	}
+}

@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "店铺数据",
+  "usingComponents": {
+    "u-icon": "/node-modules/uview-ui/components/u-icon/u-icon",
+    "u-row": "/node-modules/uview-ui/components/u-row/u-row",
+    "u-col": "/node-modules/uview-ui/components/u-col/u-col",
+    "u-loadmore": "/node-modules/uview-ui/components/u-loadmore/u-loadmore",
+    "u-calendar": "/node-modules/uview-ui/components/u-calendar/u-calendar"
+  }
+}

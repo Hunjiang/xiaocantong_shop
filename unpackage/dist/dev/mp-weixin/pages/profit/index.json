@@ -1,0 +1,13 @@
+{
+  "navigationBarTitleText": "门店营收",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "u-section": "/node-modules/uview-ui/components/u-section/u-section",
+    "u-line": "/node-modules/uview-ui/components/u-line/u-line",
+    "u-row": "/node-modules/uview-ui/components/u-row/u-row",
+    "u-col": "/node-modules/uview-ui/components/u-col/u-col",
+    "u-button": "/node-modules/uview-ui/components/u-button/u-button",
+    "u-notice-bar": "/node-modules/uview-ui/components/u-notice-bar/u-notice-bar",
+    "u-loadmore": "/node-modules/uview-ui/components/u-loadmore/u-loadmore"
+  }
+}

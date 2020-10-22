@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "订单管理",
+  "usingComponents": {
+    "u-tabs-swiper": "/node-modules/uview-ui/components/u-tabs-swiper/u-tabs-swiper",
+    "u-line": "/node-modules/uview-ui/components/u-line/u-line",
+    "u-image": "/node-modules/uview-ui/components/u-image/u-image",
+    "u-button": "/node-modules/uview-ui/components/u-button/u-button",
+    "u-loadmore": "/node-modules/uview-ui/components/u-loadmore/u-loadmore"
+  }
+}

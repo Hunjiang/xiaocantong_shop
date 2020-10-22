@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "菜品设置",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "u-tabs": "/node-modules/uview-ui/components/u-tabs/u-tabs",
+    "u-image": "/node-modules/uview-ui/components/u-image/u-image",
+    "u-action-sheet": "/node-modules/uview-ui/components/u-action-sheet/u-action-sheet"
+  }
+}

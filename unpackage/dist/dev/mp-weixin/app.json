@@ -1,0 +1,60 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/printer/bleConnect",
+    "pages/printer/sendCommand",
+    "pages/profit/getCash",
+    "pages/profit/more",
+    "pages/store/rate",
+    "pages/store/detail",
+    "pages/store/info",
+    "pages/meal/team",
+    "pages/meal/upload",
+    "pages/login/index",
+    "pages/meal/index",
+    "pages/profit/index",
+    "pages/store/index",
+    "pages/profit/info"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "校餐通",
+    "navigationBarBackgroundColor": "#ffdf67",
+    "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#676767",
+    "selectedColor": "#ffbd27",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/images/list.png",
+        "selectedIconPath": "static/images/list-selected.png",
+        "text": "订单管理"
+      },
+      {
+        "pagePath": "pages/meal/index",
+        "iconPath": "static/images/meal.png",
+        "selectedIconPath": "static/images/meal_selected.png",
+        "text": "菜品设置"
+      },
+      {
+        "pagePath": "pages/profit/index",
+        "iconPath": "static/images/store.png",
+        "selectedIconPath": "static/images/store_selected.png",
+        "text": "门店营收"
+      },
+      {
+        "pagePath": "pages/store/index",
+        "iconPath": "static/images/options.png",
+        "selectedIconPath": "static/images/options_selected.png",
+        "text": "店铺设置"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "sitemapLocation": "sitemap53.json"
+}
