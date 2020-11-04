@@ -1,35 +1,46 @@
 <template>
 	<view class="content">
 		<u-cell-group>
-			<u-cell-item title="搜索蓝牙打印机" >
-				<u-switch v-model="isSearching" :loading="is1"  @change="switchSearch"></u-switch>
+			<u-cell-item title="搜索蓝牙打印机">
+				<u-switch v-model="isSearching" :loading="is1" @change="switchSearch"></u-switch>
 			</u-cell-item>
-			
+
 			<u-cell-item title="自动打印新订单">
-				<u-switch v-model="isPrinting" :loading="is2"  @change="switchPrint"></u-switch>
+				<u-switch v-model="isPrinting" :loading="is2" @change="switchPrint"></u-switch>
 			</u-cell-item>
-<!-- 			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="switchSearch">搜索蓝牙打印机</view>
+
+		
+			<!-- 			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="switchSearch">搜索蓝牙打印机</view>
 			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="switchPrint">自动打印新订单</view> -->
-<!-- 			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="getOrder">获取订单</view> -->
-<!-- 			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="onBlueStateChange">获取蓝牙连接状态</view>
-			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="receiptTest">打印订单</view> -->
+			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="getOrder">获取订单</view>
+			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="onBlueStateChange">获取蓝牙连接状态</view>
+			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="receiptTest">打印订单</view>
 		</u-cell-group>
 		<view v-for="(item) in list" :data-title="item.deviceId" :data-name="item.name" :data-advertisData="item.advertisServiceUUIDs"
 		 :key="item.deviceId" @tap="bindViewTap">
 			<view class="item">
 				<view class="deviceId block">{{item.deviceId}}</view>
-				
+
 				<view class="name block">{{item.name}}</view>
-				<view class="block" v-if="connectedDeviceid==item.deviceId">已连接</view>
+				<view class="block" v-if="connectedDeviceid == item.deviceId">已连接</view>
 			</view>
 		</view>
 
-
+		<!-- 订单开始 -->
+		<!-- <view class="" v-show="isMannaling">
+			<view class="">
+				
+			</view>
+		</view> -->
+		<!-- 订单结束 -->
 
 		<view style='margin-top:4%;display: flex;flex-direction: row;'>
 			<!-- hidden='true' -->
 			<canvas canvas-id='edit_area_canvas' :style="{width:canvasWidth+'px',height:canvasHeight+'px'}"></canvas>
 		</view>
+
+
+
 	</view>
 </template>
 
@@ -44,8 +55,10 @@
 	export default {
 		data() {
 			return {
-				isPrinting:false,
+
+				isPrinting: false, //开不开启自动打印
 				isSearching: false, //是否正在搜索中
+				isMannaling: false,
 				list: [],
 				services: [],
 				serviceId: 0,
@@ -69,12 +82,15 @@
 				currentPrint: 1,
 				isReceiptSend: false,
 				isLabelSend: false,
-				order:'',
-				title:null,
-				is1:false,
-				is2:false,
-				isPrinting:false,
-				connectedDeviceid:null
+				order: '',
+				// numeration: 1,
+				title: null,
+				is1: false,
+				is2: false,
+				is3: false,
+				isPrinting: false,
+				connectedDeviceid: null,
+				connectedDeviceidShow: false
 			};
 		},
 		computed: mapState(['sysinfo', 'Bluetooth']),
@@ -90,16 +106,21 @@
 			let numList = []
 			let j = 0
 			for (let i = 20; i < 200; i += 10) {
-			  list[j] = i;
-			  j++
+				list[j] = i;
+				j++
 			}
+
+			// console.log(j);
 			for (let i = 1; i < 10; i++) {
-			  numList[i - 1] = i
+				numList[i - 1] = i
 			}
 			this.buffSize = list;
 			this.oneTimeData = list[0];
 			this.printNum = numList;
 			this.printerNum = numList[0];
+
+			// console.log(this.buffSize);
+			// console.log(this.oneTimeData,this.printerNum);
 		},
 		onShow() {
 			this.isPrinting = getApp().globalData.timer
@@ -117,70 +138,119 @@
 			}
 		},
 		methods: {
-			getConnect(){
+			// 获取蓝牙连接成功的设备
+			getConnect() {
 				uni.getConnectedBluetoothDevices({
-				  success:(res)=> {
-				    console.log(res.devices[0].deviceId)
-					if(res.devices[0]){
-						this.connectedDeviceid =  res.devices[0].deviceId
-						this.$forceUpdate()
-						console.log(this.connectedDeviceid)
-					}else{
-						this.connectedDeviceid = null
+					success: (res) => {
+						console.log(res);
+						console.log(res.devices[0].deviceId)
+						if (res.devices[0]) {
+							this.connectedDeviceid = res.devices[0].deviceId
+							this.$forceUpdate()
+							// console.log(this.connectedDeviceid)
+						} else {
+							this.connectedDeviceid = null
+						}
+
 					}
-					
-				  }
 				})
 			},
-			switchPrint(e){
+			// 开启关闭自动打单
+			switchPrint(e) {
 				uni.hideLoading()
-				if(e){
+				if (e) {
 					this.autoPrint()
-				}else{
+				} else {
 					getApp().globalData.timer = false
 					this.isPrinting = false
 					this.cancelPrint()
 				}
-				
+
 			},
-			autoPrint(){
+			autoPrint() {
 				getApp().globalData.timer = true
 				this.isPrinting = true
 				console.log('开启定时打印')
-				timer = setInterval(()=>{
-					
+				timer = setInterval(() => {
+
 					this.getOrder()
 					this.getConnect()
-				},15000)
+				}, 15000)
 			},
-			cancelPrint(){
+			cancelPrint() {
 				console.log('取消定时打印')
 				clearInterval(timer)
 			},
-			onBlueStateChange(){
-				uni.onBLEConnectionStateChange((res)=>{
-					console.log('蓝牙连接状态',res)
+			onBlueStateChange() {
+				uni.onBLEConnectionStateChange((res) => {
+					console.log('蓝牙连接状态', res)
 				})
 			},
-			switchSearch(e){
+
+			//切换蓝牙设备搜索
+			switchSearch(e) {
 				uni.hideLoading()
-				if(e){
+				if (e) {
 					this.startSearch()
-				}else{
+				} else {
 					this.stopSearch()
 				}
-			
+
 			},
-			getOrder(){
-				this.$u.get('/api/shop_order/print').then(res=>{
-					if(res.data){
-						
+			
+			getOrder() {
+				this.$u.get('/api/shop_order/print').then(res => {
+					console.log('222',res);
+					if (res.data) {
 						this.order = res.data
+						console.log(this.order);
 						uni.showToast({
-							title:'获取订单数据成功',
-							icon:'success',
+							title: '获取订单数据成功',
+							icon: 'success',
 							success: () => {
-								this.receiptTest()
+								// 获取本地储存的需要打印数据 之后进行对比
+								
+								
+								uni.getStorage({
+									key: 'printOrderInfo',
+									success: function(res) {
+										const {
+											data: printOrder
+										} = res;
+										console.log('获取本地', printOrder);
+										
+										
+										// for (var i in this.order) {
+										// 	let id = this.order[i].id
+
+										// 	console.log(id);
+										// 	let index = printOrder.findIndex(item => item.id == id)
+										// 	console.log(index);
+										// 	this.receiptTest(index)
+										// }
+
+
+									}
+								});
+
+
+								// var now = new Date();
+								// var nowTime = now.getTime();
+								// var year = now.getFullYear();
+								// var month = now.getMonth() + 1; //js从0开始取
+								// var date = now.getDate();
+								// var deadlineStr = year + "/" + month + "/" + date + " " + "14:04:00";
+								// var deadline = Date.parse(deadlineStr);
+								// if (nowTime == deadline) {
+								// 	this.numeration = 1
+								// 	// this.numeration += 1
+								// 	// console.log(this.numeration);
+								// } else {
+								// 	this.numeration += 1
+
+								// this.receiptTest()
+								// console.log(this.numeration);
+								// }
 							}
 						})
 					}
@@ -247,6 +317,7 @@
 				let that = this
 				uni.openBluetoothAdapter({
 					success(res) {
+						// 获取本机蓝牙适配器状态
 						uni.getBluetoothAdapterState({
 							success(res2) {
 								console.log('获取本机蓝牙适配器状态：', res2)
@@ -259,10 +330,10 @@
 										})
 										return;
 									}
-			
+
 									//获取蓝牙设备信息
 									that.getBluetoothDevices()
-			
+
 									// that.checkPemission()
 								} else {
 									uni.showModal({
@@ -281,6 +352,7 @@
 					}
 				})
 			},
+			// 停止搜索蓝牙设备
 			stopSearch() {
 				uni.stopBluetoothDevicesDiscovery({
 					success: (res) => {
@@ -304,69 +376,75 @@
 			},
 			//获取蓝牙设备信息
 			getBluetoothDevices() {
+
 				let that = this
-				that.list = [];
+				that.list = []; //显示搜索到的新设备
 				uni.startBluetoothDevicesDiscovery({
 					success(res) {
-						// console.log(res)
+						// console.log('获取称',res)
 						//蓝牙设备监听 uni.onBluetoothDeviceFound
 						plus.bluetooth.onBluetoothDeviceFound((result) => {
-							console.log('监听寻找到新设备的事件：', result)
+							// console.log('监听寻找到新设备的事件：', result)
 							let arr = that.list;
 							let devices = [];
-							let list = result.devices;
+							let list = result.devices; //新搜索到的设备列表
 							for (let i = 0; i < list.length; ++i) {
 								if (list[i].name && list[i].name != "未知设备") {
 									let arrNew = arr.filter((item) => {
-										return item.deviceId == list[i].deviceId;
+										return item.deviceId == list[i].deviceId; //判断当前蓝牙列表中的Id是否与搜索到的蓝牙Id一致
 									});
 									// console.log('arrNew:',arrNew.length)
 									if (arrNew.length == 0) {
-										devices.push(list[i]);
+										devices.push(list[i]); //新搜索到的增加到当前显示的蓝牙列表中
 									}
 								}
 							}
-			
+
 							that.list = arr.concat(devices);
+							console.log(that.list);
 						});
+						// 获取在蓝牙模块生效期间所有已发现的蓝牙设备。包括已经和本机处于连接状态的设备。
 						that.time = setTimeout(() => {
 							// uni.getBluetoothDevices
+							// 定时获取已搜索到的蓝牙设备
 							plus.bluetooth.getBluetoothDevices({
 								success(res2) {
 									let devices = [];
-									let list = res2.devices;
+									let list = res2.devices; //设备列表信息
 									for (let i = 0; i < list.length; ++i) {
 										if (list[i].name && list[i].name != "未知设备") {
 											devices.push(list[i]);
 										}
 									}
-			
+									console.log('获取已搜索到的蓝牙设备');
 									that.list = devices;
-									console.log('获取在蓝牙模块生效期间所有已发现的蓝牙设备：',res2);
+									// console.log('获取在蓝牙模块生效期间所有已发现的蓝牙设备：',res2);
 								},
-								complete(){
+								complete() {
 									this.isSearching = false
 								}
 							})
-			
+
 							clearTimeout(that.time);
 						}, 3000);
 					}
 				});
-			
+
 			},
 			//绑定蓝牙
 			bindViewTap(e) {
 				let that = this;
+				console.log(e);
 				let {
 					title
 				} = e.currentTarget.dataset;
+				console.log(title);
 				let {
 					BLEInformation
 				} = that.Bluetooth;
 				this.stopSearch();
-				
-				that.serviceId = 0;
+				// this.isSearching = true;
+				that.serviceId = 0; //设备Id
 				that.writeCharacter = false;
 				that.readCharacter = false;
 				that.notifyCharacter = false;
@@ -375,12 +453,19 @@
 				})
 				console.log('deviceId:', title)
 				// uni.createBLEConnection
+
+				// 连接低功耗蓝牙设备
 				plus.bluetooth.createBLEConnection({
 					deviceId: title,
 					success(res) {
+
 						console.log('连接低功耗蓝牙设备：成功', res)
 						BLEInformation.deviceId = title;
 						that.$store.commit('BLEInformationSet', BLEInformation);
+						uni.setInterval(() => {
+
+						}, 1500)
+
 						uni.hideLoading()
 						that.getSeviceId()
 					},
@@ -388,9 +473,11 @@
 						console.log('连接低功耗蓝牙设备：失败', e)
 						this.title = null
 						that.errorCodeTip(e.errCode);
+
 						uni.hideLoading()
 					}
 				})
+
 			},
 			//获取蓝牙设备所有服务(service)。
 			getSeviceId() {
@@ -398,24 +485,29 @@
 				let {
 					BLEInformation
 				} = that.Bluetooth;
-				console.log('BLEInformation.deviceId:',BLEInformation.deviceId)
+				// console.log('BLEInformation.deviceId:',BLEInformation.deviceId)
 				// uni.getBLEDeviceServices
-				let t=setTimeout(()=>{
+				let t = setTimeout(() => {
 					plus.bluetooth.getBLEDeviceServices({
-						deviceId: BLEInformation.deviceId,
+						deviceId: BLEInformation.deviceId, //当前点击后的蓝牙Id
 						success(res) {
-							console.log('获取蓝牙设备所有服务：成功',res)
+							console.log('获取蓝牙设备所有服务：成功', res)
 							that.services = res.services;
+
+							this.getConnect()
 							that.getCharacteristics()
 						},
 						fail: function(e) {
-							that.errorCodeTip(e.code);	
-							console.log('获取蓝牙设备所有服务：失败',e)
+							that.errorCodeTip(e.code);
+							console.log('获取蓝牙设备所有服务：失败', e)
 						}
 					})
 					clearTimeout(t);
-				},1500)
+				}, 1500)
 			},
+
+
+			// 获取蓝牙的所有特征  服务列表、服务Id、写入、读取、通知
 			getCharacteristics() {
 				var that = this
 				let {
@@ -428,14 +520,15 @@
 				let {
 					BLEInformation
 				} = that.Bluetooth;
+				// 获取蓝牙设备某个服务中所有特征值(characteristic)
 				// uni.getBLEDeviceCharacteristics
 				plus.bluetooth.getBLEDeviceCharacteristics({
 					deviceId: BLEInformation.deviceId,
 					serviceId: list[num].uuid,
 					success(res) {
-						console.log("获取蓝牙设备某个服务中所有特征值：成功",res);
+						console.log("获取蓝牙设备某个服务中所有特征值：成功", res);
 						for (var i = 0; i < res.characteristics.length; ++i) {
-							var properties = res.characteristics[i].properties
+							var properties = res.characteristics[i].properties //当前蓝牙设备特征值支持的操作类型
 							var item = res.characteristics[i].uuid
 							if (!notify) {
 								if (properties.notify) {
@@ -477,53 +570,66 @@
 								that.getCharacteristics()
 							}
 						} else {
-							
+
 							that.openControl()
 						}
 					},
 					fail: function(e) {
-						console.log("获取蓝牙设备某个服务中所有特征值：失败",e);
-						that.errorCodeTip(e.errCode);	
+						console.log("获取蓝牙设备某个服务中所有特征值：失败", e);
+						that.errorCodeTip(e.errCode);
 					}
 				})
 			},
 			openControl: function() {
 				uni.showToast({
-					title:'打印机连接成功',
-					icon:'success'
+					title: '打印机连接成功',
+					icon: 'success'
 				})
 			},
-			//票据测试
-			receiptTest(){
+			//打印票据测试
+			receiptTest() {
+
+				var index = index + 1
 				var that = this;
 				var canvasWidth = that.canvasWidth
 				var canvasHeight = that.canvasHeight
 				var command = esc.jpPrinter.createNew()
 				var order = this.order
-				console.log('本次打印的订单数据',order)
+				console.log('本次打印的订单数据', order)
 				command.init()
+				// 编号
+				command.bold(1); //加粗
+				command.setFontSize(24); //字体大小
+				command.setSelectJustification(1) //居中
+				command.rowSpace(80); //打印空白
+				command.setText('#' + order.print_number);
+				
+				console.log(order.print_number);
+				command.setPrint(); //打印
+				command.rowSpace(60);
+
 				// 标题
-				command.bold(1);//加粗
-				command.setFontSize(16);//字体大小
-				command.setSelectJustification(1)//居中
-				command.rowSpace(80);
-				command.setText(order.shop[0].name+" "+order.shop[0].campus_name);
+				// command.bold(1);//加粗
+				command.setFontSize(16); //字体大小
+				// command.setSelectJustification(1)//居中
+				// command.rowSpace(80);
+				command.setText(order.shop[0].name + " " + order.shop[0].campus_name);
 				command.setPrint();
 				command.rowSpace(60);
-				
-				command.bold(0);//取消加粗
-				command.setFontSize(0);//正常字体
+
+				command.bold(0); //取消加粗
+				command.setFontSize(0); //正常字体
 				//时间
-				command.setSelectJustification(0);//居左
-				command.setText("支付时间："+order.pay_time_text);
+				command.setSelectJustification(0); //居左
+				command.setText("支付时间：" + order.pay_time_text);
 				command.setPrint();
 				//编号
-				command.setSelectJustification(0);//居左
-				command.setText("订单号："+order.order_number);
-				command.setPrintAndFeed(80);//打印并走纸feed个单位
+				command.setSelectJustification(0); //居左
+				command.setText("订单号：" + order.order_number);
+				command.setPrintAndFeed(80); //打印并走纸feed个单位
 				//列表
-				command.rowSpace(80);//间距
-				command.bold(5);//加粗
+				command.rowSpace(80); //间距
+				command.bold(5); //加粗
 				command.setText("商品");
 				command.setAbsolutePrintPosition(130);
 				command.setText("规格");
@@ -532,9 +638,9 @@
 				command.setAbsolutePrintPosition(300);
 				command.setText("单价");
 				command.setPrint()
-				command.bold(0);//加粗
+				command.bold(0); //加粗
 				// -------1
-				order.goods.forEach((item)=>{
+				order.goods.forEach((item) => {
 					command.setText(item.goods_name);
 					command.setAbsolutePrintPosition(130);
 					command.setText(item.goods_spec_name);
@@ -544,51 +650,51 @@
 					command.setText(item.goods_price);
 					command.setPrint()
 				})
-				
-			
-			
+
+
+
 				//合计
-				command.bold(5);//加粗
-				command.setText("总数："+order.goods_num);
+				command.bold(5); //加粗
+				command.setText("总数：" + order.goods_num);
 				command.setAbsolutePrintPosition(180);
-				command.setText("合计：￥"+order.pay_price);
+				command.setText("合计：￥" + order.pay_price);
 				command.setPrint();
-			
+
 				//提示
-				command.rowSpace(40);//间距
-				command.bold(2);//加粗
-				command.setSelectJustification(0);//居左
-				command.setText("客户姓名："+order.user_address[0].name);
+				command.rowSpace(40); //间距
+				command.bold(2); //加粗
+				command.setSelectJustification(0); //居左
+				command.setText("客户姓名：" + order.user_address[0].name);
 				command.setPrint();
-				command.setText("客户电话："+order.user_address[0].phone);
+				command.setText("客户电话：" + order.user_address[0].phone);
 				command.setPrint();
-				command.setText("收货地址："+order.user_address[0].campus_name+" "+order.user_address[0].address);
+				command.setText("收货地址：" + order.user_address[0].campus_name + " " + order.user_address[0].address);
 				command.setPrint();
-				command.setText("约定送达时间："+order.user_delivery_time);
+				command.setText("约定送达时间：" + order.user_delivery_time);
 				command.setPrint();
-				command.setText("(备注："+order.buyer_remark+")");
+				command.setText("(备注：" + order.buyer_remark + ")");
 				command.setPrint();
-				command.rowSpace(80);//间距
+				command.rowSpace(80); //间距
 				//电话
-				
-				command.setSelectJustification(0);//居左
-				command.rowSpace(40);//间距
-				command.setText("商家电话:"+order.shop[0].phone);
+
+				command.setSelectJustification(0); //居左
+				command.rowSpace(40); //间距
+				command.setText("商家电话:" + order.shop[0].phone);
 				command.setPrint();
-				command.setText("联系地址:"+order.shop[0].address);
+				command.setText("联系地址:" + order.shop[0].address);
 				command.setPrint();
-			
+
 				command.setPrintAndFeedRow(3);
-				
+
 				that.isReceiptSend = true;
 				that.prepareSend(command.getData());
-			
-			
+
+
 			},
-			
+
 			//准备发送，根据每次发送字节数来处理分包数量
-			prepareSend(buff){
-				console.log(buff);
+			prepareSend(buff) {
+				// console.log(buff);
 				let that = this
 				let time = that.oneTimeData
 				let looptime = parseInt(buff.length / time);
@@ -600,73 +706,80 @@
 				that.Send(buff)
 			},
 			//分包发送
-			Send(buff){
+			Send(buff) {
 				let that = this
-				let {currentTime,looptime:loopTime,lastData,oneTimeData:onTimeData,printerNum:printNum,currentPrint}=that;
+				let {
+					currentTime,
+					looptime: loopTime,
+					lastData,
+					oneTimeData: onTimeData,
+					printerNum: printNum,
+					currentPrint
+				} = that;
 				let buf;
 				let dataView;
 				if (currentTime < loopTime) {
-				  buf = new ArrayBuffer(onTimeData)
-				  dataView = new DataView(buf)
-				  for (var i = 0; i < onTimeData; ++i) {
-					dataView.setUint8(i, buff[(currentTime - 1) * onTimeData + i])
-				  }
+					buf = new ArrayBuffer(onTimeData)
+					dataView = new DataView(buf)
+					for (var i = 0; i < onTimeData; ++i) {
+						dataView.setUint8(i, buff[(currentTime - 1) * onTimeData + i])
+					}
 				} else {
-				  buf = new ArrayBuffer(lastData)
-				  dataView = new DataView(buf)
-				  for (var i = 0; i < lastData; ++i) {
-					dataView.setUint8(i, buff[(currentTime - 1) * onTimeData + i])
-				  }
+					buf = new ArrayBuffer(lastData)
+					dataView = new DataView(buf)
+					for (var i = 0; i < lastData; ++i) {
+						dataView.setUint8(i, buff[(currentTime - 1) * onTimeData + i])
+					}
 				}
 				console.log("第" + currentTime + "次发送数据大小为：" + buf.byteLength)
 				let {
 					BLEInformation
 				} = that.Bluetooth;
 				plus.bluetooth.writeBLECharacteristicValue({
-				  deviceId: BLEInformation.deviceId,
-				  serviceId: BLEInformation.writeServiceId,
-				  characteristicId: BLEInformation.writeCharaterId,
-				  value: buf,
-				  success: (res)=> {
-					console.log('向低功耗蓝牙设备特征值中写入二进制数据：成功',res)
-					console.log('自动打印订单:成功',this.order.id)
-					if(currentTime == 5){
-						console.log('this.order.id')
-						this.$u.get('/api/shop_order/printNotify',{
-							order_id:this.order.id
-						}).then(res=>{
-							console.log('回调成功')
-						})
+					deviceId: BLEInformation.deviceId,
+					serviceId: BLEInformation.writeServiceId,
+					characteristicId: BLEInformation.writeCharaterId,
+					value: buf,
+					success: (res) => {
+						console.log('向低功耗蓝牙设备特征值中写入二进制数据：成功', res)
+						console.log('自动打印订单:成功', this.order.id)
+						if (currentTime == 5) {
+							console.log('this.order.id')
+							this.$u.get('/api/shop_order/printNotify', {
+								order_id: this.order.id
+							}).then(res => {
+								console.log('回调成功')
+							})
+						}
+
+					},
+					fail: function(e) {
+						console.log('向低功耗蓝牙设备特征值中写入二进制数据：失败', e)
+					},
+					complete: function() {
+						currentTime++
+						if (currentTime <= loopTime) {
+							that.currentTime = currentTime;
+							that.Send(buff)
+						} else {
+							uni.showToast({
+								title: '已打印第' + currentPrint + '张',
+							})
+							if (currentPrint == printNum) {
+								that.looptime = 0;
+								that.lastData = 0;
+								that.currentTime = 1;
+								that.isReceiptSend = false;
+								that.isLabelSend = false;
+								that.currentPrint = 1;
+							} else {
+								currentPrint++;
+								that.currentPrint = currentPrint;
+								that.currentTime = 1;
+								that.Send(buff)
+							}
+						}
 					}
-					
-				  },
-				  fail: function(e) {
-					console.log('向低功耗蓝牙设备特征值中写入二进制数据：失败',e)
-				  },
-				  complete: function() {
-					currentTime++
-					if (currentTime <= loopTime) {
-					  that.currentTime = currentTime;
-					  that.Send(buff)
-					} else {
-					  uni.showToast({
-						title: '已打印第' + currentPrint + '张',
-					  })
-					  if (currentPrint == printNum) {
-						that.looptime = 0;
-						that.lastData = 0;
-						that.currentTime = 1;
-						that.isReceiptSend = false;
-						that.isLabelSend = false;
-						that.currentPrint = 1;
-					  } else {
-						currentPrint++;
-						that.currentPrint = currentPrint;
-						that.currentTime = 1;
-						that.Send(buff)
-					  }
-					}
-				  }
 				})
 			}
 		}

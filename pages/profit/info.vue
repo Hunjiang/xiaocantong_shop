@@ -143,6 +143,7 @@
 				is2: false,
 				isPrinting: false,
 				connectedDeviceid: null,
+				
 				listDetail: {},
 				useraddress: {},
 				base:this.$base,
@@ -156,7 +157,7 @@
 					order_id: e.id
 				}
 			).then(res => {
-				console.log(res.data)
+				console.log(res)
 				this.listDetail = res.data
 
 				this.useraddress = res.data.user_address[0]
@@ -201,8 +202,7 @@
 		methods: {
 			getConnect() {
 				uni.getConnectedBluetoothDevices({
-					success: (res) => {
-						
+					success: (res) => {					
 						if (res.devices[0]) {
 							this.connectedDeviceid = res.devices[0].deviceId
 							this.$forceUpdate()
@@ -256,10 +256,6 @@
 						console.log(err)
 					}
 				}) 
-				
-				
-
-
 			},
 			cancelPrint() {
 				console.log('取消定时打印')
