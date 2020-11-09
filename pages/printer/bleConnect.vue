@@ -9,11 +9,11 @@
 				<u-switch v-model="isPrinting" :loading="is2" @change="switchPrint"></u-switch>
 			</u-cell-item>
 		
-			<!-- 			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="switchSearch">搜索蓝牙打印机</view>
+			<!-- <view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="switchSearch">搜索蓝牙打印机</view>
 			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="switchPrint">自动打印新订单</view> -->
-			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="getOrder">获取订单</view>
-			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="onBlueStateChange">获取蓝牙连接状态</view>
-			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @click="receiptTest">打印订单</view>
+			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @tap="getOrder">获取订单</view>
+			<view style="font-size: 32rpx;margin-bottom: 50rpx;" tap="onBlueStateChange">获取蓝牙连接状态</view>
+			<view style="font-size: 32rpx;margin-bottom: 50rpx;" @tap="receiptTest">打印订单</view>
 		</u-cell-group>
 		<view v-for="(item) in list" :data-title="item.deviceId" :data-name="item.name" :data-advertisData="item.advertisServiceUUIDs"
 		 :key="item.deviceId" @tap="bindViewTap(item.deviceId)" v-if="showLy">
@@ -123,10 +123,17 @@
 			// console.log(this.oneTimeData,this.printerNum);
 		},
 		onShow() {
+			// let that = this
+			// let {
+			// 	BLEInformation
+			// } = that.Bluetooth;
 			this.isPrinting = getApp().globalData.timer
+			// if( BLEInformation.deviceId) {
+			// 	this.showLy = true
+			// }
 		},
 		onUnload() {
-			let that = this;
+			let that = this; 
 			let {
 				BLEInformation
 			} = that.Bluetooth;
@@ -197,7 +204,8 @@
 					this.showLy = false
 					this.list = []
 					this.deviceId = ''
-					this.stopSearch()					
+					this.stopSearch()	
+					this.$forceUpdate() 
 				}
 			},
 			
@@ -320,7 +328,7 @@
 						// 获取本机蓝牙适配器状态
 						uni.getBluetoothAdapterState({
 							success(res2) {
-								console.log('获取本机蓝牙适配器状态：', res2)
+								// console.log('获取本机蓝牙适配器状态：', res2)
 								if (res2.available) {
 									that.isSearching = true;
 									if (res2.discovering) {
@@ -401,7 +409,7 @@
 							for (let i = 0; i < list.length; ++i) {
 								if (list[i].name && list[i].name != "未知设备") {
 									let arrNew = arr.filter((item) => {
-										return item.deviceId == list[i].deviceId; //判断当前蓝牙列表中的Id是否与搜索到的蓝牙Id一致
+										return item.deviceId == list[i].deviceId; //遍历出当前蓝牙列表中的Id是否与搜索到的蓝牙Id一致
 									});
 									// console.log('arrNew:',arrNew.length)
 									if (arrNew.length == 0) {
@@ -429,10 +437,12 @@
 									console.log('获取已搜索到的蓝牙设备');
 									that.list = devices;
 									console.log('获取在蓝牙模块生效期间所有已发现的蓝牙设备：',that.list);
-								},
-								complete() {
-									this.isSearching = false
 								}
+								// ,
+								// complete() {
+								// 	this.isSearching = false
+								// 	console.log('55555');
+								// }
 							})
 
 							clearTimeout(that.time);
@@ -459,7 +469,7 @@
 			
 				// uni.createBLEConnection
 				that.deviceId = deviceId
-				console.log('连接成功了嘛',that.deviceId);
+				console.log('准备连接',that.deviceId);
 				// 连接低功耗蓝牙设备 
 				plus.bluetooth.createBLEConnection({
 					deviceId:that.deviceId,
@@ -474,7 +484,7 @@
 								that.$store.commit('BLEInformationSet', BLEInformation);
 									uni.hideLoading()
 									that.getSeviceId()
-									console.log('获取成功');								
+									console.log('获取成功');
 							},
 							fail: (e) => {
 								console.log('停止搜索蓝牙设备：失败', e)
@@ -486,10 +496,15 @@
 					},
 					fail(res) {
 						console.log('连接低功耗蓝牙设备：失败', res)
-						that.list = []
+						uni.closeBluetoothAdapter({
+						  success(res) {
+						   // that.startSearch()
+						  }
+						})
+
 						that.errorCodeTip(e.errCode);
 
-						uni.hideLoading()
+						uni.hideLoading() 
 					}
 				})
 			},

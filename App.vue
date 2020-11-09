@@ -10,7 +10,7 @@
 						if(res.data==1){
 							const innerAudioContext = uni.createInnerAudioContext();
 							console.log('src',this.$base+"/apk/warn.mp3")
-							innerAudioContext.src = this.$base+"/apk/warn.mp3";
+							// innerAudioContext.src = this.$base+"/apk/warn.mp3";
 							innerAudioContext.play();
 							innerAudioContext.onPlay((res) => {
 							  console.log('开始播放');

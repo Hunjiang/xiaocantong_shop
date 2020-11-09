@@ -23,13 +23,13 @@
 							 height="60rpx"></u-image>
 						</view>
 						<u-line color="#e1e1e1" margin="20rpx 0" />
-						<view class="bold">商品 {{getTotalnum(item.goods)}}件</view>
+						<view class="bold">商品 {{getTotalnum(item.goods)}}件</view>						
 						<view class="goodsItem" v-for="item1,index1 of item.goods">
 							<view>{{item1.goods_name}} {{item1.goods_spec_name}}X{{item1.total_num}}</view>
 							<view>￥{{getGoodsprice(item1)}}</view>
-						</view>
+						</view> 
 						<view class="goodsItem">
-							<view class="bold">配送费</view>
+							<view class="bold">配送费</view> 
 							<view>￥{{item.shop[0].shipping_free}}</view>
 						</view>
 						<view class="goodsItem">
@@ -37,7 +37,7 @@
 							<view class="colorRed">￥{{Number(item.goods_price)+Number(item.shipping_free)}}</view>
 						</view>
 						<u-line color="#e1e1e1" margin="20rpx 0" />
-						<view class="bold">备注</view>
+						<view class="bold">备注:</view>
 						<view class="note">{{item.buyer_remark}}</view>
 						<view class="buttonList">
 							<u-button type="warning" size="mini" @click="refuse(item.id,index)">拒绝订单</u-button>
@@ -80,7 +80,7 @@
 						</view>
 						<u-line color="#e1e1e1" margin="20rpx 0" />
 						<view class="button_right">
-							<u-button type="primary" size="mini" @click="manualPrint(665)">手动打单</u-button>
+							<u-button type="primary" size="mini" @click="manualPrint(item.id)">手动打单</u-button>
 						</view>
 
 						<view class="bold" v-if="item.rider2[0]">{{item.rider2[0].nickname}} {{getPhone(item.rider2[0].phone)}}</view>
@@ -152,7 +152,7 @@
 		data() {
 			return {
 				show: false,
-				content: '东临碣石，以观沧海',
+				// content: '东临碣石，以观沧海',
 				list: [{
 					name: '新订单'
 				}, {
@@ -172,17 +172,55 @@
 				printNum: [],
 				printerNum: 1,
 				
+				id: 0,
+				// services: [],
+				// serviceId: 0,
+				// writeCharacter: false,
+				// readCharacter: false,
+				// notifyCharacter: false,
+				// sendContent: "",
+				looptime: 0,
+				currentTime: 1,
+				lastData: 0,
+				oneTimeData: 0,
+				// returnResult: "",
+				canvasWidth: 180,
+				canvasHeight: 180,
+				// imageSrc: '../../static/img/abc_ic_star_black_16dp.png',
+				buffSize: [],
+				buffIndex: 0,
+				printNum: [],
+				printNumIndex: 0,
+				printerNum: 1,
+				currentPrint: 1,
+				isReceiptSend: false,
+				isLabelSend: false,
+				order: '',
+				// title: null,
+				// is1: false,
+				// is2: false,
+				// isPrinting: false,
+				connectedDeviceid: null,
+				
+				// listDetail: {},
+				// useraddress: {},
+				// base:this.$base,
+				
+				
+				
 			}
 
 		},
 		computed: mapState(['sysinfo', 'Bluetooth']),
 		onLod() {
-			this.getList(0)
+			let that = this;
+			that.tabsChange(0) //首页加载新订单
+			// this.getList(0)
 			
 			// console.log(this.Bluetooth)
-			let that = this;
+			
 			let {
-				BLEInformation
+				BLEInformation 
 			} = that.Bluetooth;
 		},
 		onReady() {
@@ -213,15 +251,17 @@
 			// this.cancelPrint();
 			//停止搜索蓝牙设备
 			
+			
 		},
 		methods: {
 			getConnect() {
 				uni.getConnectedBluetoothDevices({
-					success: (res) => {						
+					success: (res) => {	
+						console.log(res);
 						if (res.devices[0]) {
 							this.connectedDeviceid = res.devices[0].deviceId
 							this.$forceUpdate()
-							this.getOrder(index)
+							this.getOrder()
 						} else {
 							this.connectedDeviceid = null
 							uni.showToast({
@@ -254,6 +294,25 @@
 				this.swiperCurrent = e.detail.current;
 
 			},
+			getOrder() {
+				this.$u.get('/api/shop_order/manualPrint',{
+					order_id: this.id
+				}).then(res => {
+					console.log(res);
+					if (res.data) {
+				
+						this.order = res.data
+						uni.showToast({
+							title: '获取数据成功',
+							icon: 'success',
+							success: () => {
+								this.receiptTest()
+							}
+						})
+					}
+				})
+			},
+			
 			// 手动打单
 			manualPrint(id) {
 				uni.getBluetoothAdapterState({
@@ -262,36 +321,34 @@
 						uni.showModal({
 							title: '确定打印？',
 							success: (res) => {
-								if (res.confirm) {													
-								// uni.getStorage({
-								//     key: 'printOrderInfo',
-								//     success: function (res) {
-								// 		const {data:printOrderInfo} = res
-								// 		let index = printOrderInfo.findIndex(item => item.id == id)
-								// 		this.getConnect(index)
+								
+								if (res.confirm) {	
+									this.id = id
+									this.getConnect()
+									// console.log(this.id);
 								} else {
+									uni.showToast({
+										title: '蓝牙已断开',
+										
+										mask: true
+									})
 						
 								}
 							}
 						});
 					},
 					fail: (err) => {
+						uni.showToast({
+							title: '蓝牙已断开',
+							icon: 'none'
+							// mask: true
+						})
 						console.log(err)
 					}
 				}) 
 				
 								
-				console.log(id);
-				uni.getStorage({
-				    key: 'printOrderInfo',
-				    success: function (res) {
-						const {data:printOrderInfo} = res
-						let index = printOrderInfo.findIndex(item => item.id == id)
-						// 调用打印
-						
-						console.log(index);
-				    }
-				});
+				
 			},
 			
 			refuse(id, index) {
@@ -364,8 +421,8 @@
 			},
 			// tabs通知swiper切换
 			tabsChange(index) {
-				// this.getList(index)
-				this.swiperCurrent = index;
+				this.getList(index)
+				this.swiperCurrent = index; 
 
 
 			},
@@ -390,26 +447,28 @@
 			makePhone(num) {
 				uni.makePhoneCall({
 					phoneNumber: num
-				})
+				}) 
 			},
-
+			// 获取订单列表
 			getList(status) {
 				this.$u.get('/api/shop_order/index', {
 					cat_id: status + 1
 				}).then(res => {
-					console.log(res.data)
+					// console.log(res.data)
 					this.orderList[status] = res.data
-					// console.log(this.orderList[0])
+					console.log(this.orderList[status])
+						this.$forceUpdate()
 					if (res.data.length == 0) {
 						this.loadStatus[status] = "nomore"
 					}
+				
 				})
 			},
 			getTotalnum(goods) {
 				const totalNum = goods.reduce((total, item) => {
 					return total + item.total_num
 				}, 0)
-				console.log('num', totalNum)
+				// console.log('num', totalNum)
 				return totalNum
 			},
 			getGoodsprice(item) {
@@ -420,14 +479,209 @@
 				var pat = /(\d{3})\d*(\d{4})/
 				var b = str.replace(pat, '$1****$2');
 				return b
+			},
+			receiptTest() {
+				console.log('1111');
+				var that = this;
+				var canvasWidth = that.canvasWidth
+				var canvasHeight = that.canvasHeight
+				var command = esc.jpPrinter.createNew()
+				var order = this.order
+				console.log('本次打印的订单数据',order.shop[0].name + " " + order.shop[0].campus_name)
+				command.init()
+				// 编号
+				command.bold(1); //加粗
+				command.setFontSize(16); //字体大小
+				command.setSelectJustification(1) //居中
+				command.rowSpace(80); //打印空白
+				command.setText('#' + order.print_number);
+				
+				console.log(order.print_number);
+				command.setPrint(); //打印
+				command.rowSpace(60);
+				
+				// 标题
+				// command.bold(1);//加粗
+				command.setFontSize(16); //字体大小
+				// command.setSelectJustification(1)//居中
+				// command.rowSpace(80);
+				command.setText(order.shop[0].name + " " + order.shop[0].campus_name);
+				command.setPrint();
+				command.rowSpace(60);
+				
+				command.bold(0); //取消加粗
+				command.setFontSize(0); //正常字体
+				//时间
+				command.setSelectJustification(0); //居左
+				command.setText("支付时间：" + order.pay_time_text);
+				command.setPrint();
+				//编号
+				command.setSelectJustification(0); //居左
+				command.setText("订单号：" + order.order_number);
+				command.setPrintAndFeed(80); //打印并走纸feed个单位
+				//列表
+				command.rowSpace(80); //间距
+				command.bold(5); //加粗
+				command.setText("商品");
+				command.setAbsolutePrintPosition(130);
+				command.setText("规格");
+				command.setAbsolutePrintPosition(240);
+				command.setText("数量");
+				command.setAbsolutePrintPosition(300);
+				command.setText("单价");
+				command.setPrint()
+				command.bold(0); //加粗
+				// -------1
+				order.goods.forEach((item) => {
+					command.setText(item.goods_name);
+					command.setAbsolutePrintPosition(130);
+					command.setText(item.goods_spec_name);
+					command.setAbsolutePrintPosition(240);
+					command.setText(item.total_num);
+					command.setAbsolutePrintPosition(300);
+					command.setText(item.goods_price);
+					command.setPrint()
+				})
+			
+			
+			
+				//合计
+				command.bold(5); //加粗
+				command.setText("总数：" + order.goods_num);
+				command.setAbsolutePrintPosition(180);
+				command.setText("合计：￥" + order.pay_price);
+				command.setPrint();
+			
+				//提示
+				command.rowSpace(40); //间距
+				command.bold(2); //加粗
+				command.setSelectJustification(0); //居左
+				command.setText("客户姓名：" + order.user_address[0].name);
+				command.setPrint();
+				command.setText("客户电话：" + order.user_address[0].phone);
+				command.setPrint();
+				command.setText("收货地址：" + order.user_address[0].campus_name + " " + order.user_address[0].address);
+				command.setPrint();
+				command.setText("约定送达时间：" + order.user_delivery_time);
+				command.setPrint();
+				command.setText("(备注：" + order.buyer_remark + ")");
+				command.setPrint();
+				command.rowSpace(80); //间距
+				//电话
+			
+				command.setSelectJustification(0); //居左
+				command.rowSpace(40); //间距
+				command.setText("商家电话:" + order.shop[0].phone);
+				command.setPrint();
+				command.setText("联系地址:" + order.shop[0].address);
+				command.setPrint();
+			
+				command.setPrintAndFeedRow(3);
+			
+				that.isReceiptSend = true;
+				that.prepareSend(command.getData());
+			
+			
+			},
+			
+			//准备发送，根据每次发送字节数来处理分包数量
+			prepareSend(buff) {
+				console.log(buff);
+				let that = this
+				let time = that.oneTimeData
+				let looptime = parseInt(buff.length / time);
+				let lastData = parseInt(buff.length % time);
+				console.log(looptime + "---" + lastData)
+				this.looptime = looptime + 1;
+				this.lastData = lastData;
+				this.currentTime = 1;
+				that.Send(buff)
+			},
+			//分包发送
+			Send(buff) {
+				let that = this
+				let {
+					currentTime,
+					looptime: loopTime,
+					lastData,
+					oneTimeData: onTimeData,
+					printerNum: printNum,
+					currentPrint
+				} = that;
+				let buf;
+				let dataView;
+				if (currentTime < loopTime) {
+					buf = new ArrayBuffer(onTimeData)
+					dataView = new DataView(buf)
+					for (var i = 0; i < onTimeData; ++i) {
+						dataView.setUint8(i, buff[(currentTime - 1) * onTimeData + i])
+					}
+				} else {
+					buf = new ArrayBuffer(lastData)
+					dataView = new DataView(buf)
+					for (var i = 0; i < lastData; ++i) {
+						dataView.setUint8(i, buff[(currentTime - 1) * onTimeData + i])
+					}
+				}
+				console.log("第" + currentTime + "次发送数据大小为：" + buf.byteLength)
+				let {
+					BLEInformation
+				} = that.Bluetooth;
+				plus.bluetooth.writeBLECharacteristicValue({
+					deviceId: BLEInformation.deviceId,
+					serviceId: BLEInformation.writeServiceId,
+					characteristicId: BLEInformation.writeCharaterId,
+					value: buf,
+					success: (res) => {
+						console.log('向低功耗蓝牙设备特征值中写入二进制数据：成功', res)
+						console.log('自动打印订单:成功', this.order.id)
+						if (currentTime == 5) {
+							console.log('this.order.id')
+							this.$u.get('/api/shop_order/printNotify', {
+								order_id: this.order.id
+							}).then(res => {
+								console.log('回调成功')
+							})
+						}
+			
+					},
+					fail: function(e) {
+						console.log('向低功耗蓝牙设备特征值中写入二进制数据：失败', e)
+					},
+					complete: function() {
+						currentTime++
+						if (currentTime <= loopTime) {
+							that.currentTime = currentTime;
+							that.Send(buff)
+						} else {
+							uni.showToast({
+								title: '已打印',
+							})
+							if (currentPrint == printNum) {
+								that.looptime = 0;
+								that.lastData = 0;
+								that.currentTime = 1;
+								that.isReceiptSend = false;
+								that.isLabelSend = false;
+								that.currentPrint = 1;
+							} else {
+								currentPrint++;
+								that.currentPrint = currentPrint;
+								that.currentTime = 1;
+								that.Send(buff)
+							}
+						}
+					}
+				})
 			}
 		},
 		onShow() {
 			this.getList(0)
-			this.getList(1)
-			this.getList(2)
-			this.tabsChange(1)
+			// this.getList(1)
+			// this.getList(2)
+			// this.tabsChange(1)
 		}
+		
 	}
 </script>
 
@@ -505,8 +759,10 @@
 	}
 
 	.swiper-item {
+		width: 100%;
 		height: 100%;
-	}
+		
+	} 
 
 	.button_right {
 		flex: 1;
