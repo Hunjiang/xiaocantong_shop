@@ -289,8 +289,6 @@
 						let index = printOrderInfo.findIndex(item => item.id == id)
 						// 调用打印
 						
-						
-						
 						console.log(index);
 				    }
 				});
@@ -327,22 +325,22 @@
 					success: (res) => {
 						// console.log(res);
 						if (res.confirm) {
-							// 	this.$u.get('/api/shop_order/takeOrder', {
-							// 		order_id: id,
-							// 		is_shop: 1
-							// 	}).then(res => {
-							// 		if (res.code == 1) {
-							// 			uni.showToast({
-							// 				title: '商家自送接单成功',
-							// 				icon: 'success',
-							// 				mask: true
-							// 			})
+								this.$u.get('/api/shop_order/takeOrder', {
+									order_id: id,
+									is_shop: 1
+								}).then(res => {
+									if (res.code == 1) {
+										uni.showToast({
+											title: '商家自送接单成功',
+											icon: 'success',
+											mask: true
+										})
 							let printList = this.orderList[0].filter(item => item.id == id)
 							this.$store.commit('addprintOrderInfo', printList)
-							// this.orderList[0].splice(index, 1)
+							this.orderList[0].splice(index, 1)
 							this.$forceUpdate()
-							// 	}
-							// })
+								}
+							})
 						} else if (res.cancel) {
 							this.$u.get('/api/shop_order/takeOrder', {
 								order_id: id,
