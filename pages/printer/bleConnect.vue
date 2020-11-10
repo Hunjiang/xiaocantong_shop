@@ -220,7 +220,7 @@
 							icon: 'success',
 							success: () => {
 								// 获取本地储存的需要打印数据 之后进行对比
-																
+										this.receiptTest()							
 								uni.getStorage({
 									key: 'printOrderInfo',
 									success: function(res) {
@@ -228,14 +228,13 @@
 											data: printOrder
 										} = res;
 										console.log('获取本地', printOrder);
-																				
+																			
 										// for (var i in this.order) {
 										// 	let id = this.order[i].id
 
 										// 	console.log(id);
 										// 	let index = printOrder.findIndex(item => item.id == id)
 										// 	console.log(index);
-										// 	this.receiptTest(index)
 										// }
 
 
@@ -488,8 +487,7 @@
 							},
 							fail: (e) => {
 								console.log('停止搜索蓝牙设备：失败', e)
-								this.errorCodeTip(e.errCode);
-								
+								this.errorCodeTip(e.errCode);							
 							}
 						})				
 						
